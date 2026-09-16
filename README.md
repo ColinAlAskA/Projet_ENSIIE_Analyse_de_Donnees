@@ -1,22 +1,30 @@
-Bonjour,
+# Projets d'Analyse de données
 
-Le dossier comprend :
+Ce dossier rassemble les deux projets réalisés dans le cadre de l'UE **Analyse de données**, enseignée par le professeur **Christophe Ambroise**.
 
-- Un fichier R Markdown : Algorithme_EM_Coerchon_Colin.Rmd
-- Un fichier R Markdown : Projet_ANDO_Coerchon_Fort.Rmd
-- Le fichier preambule.tex
-- Les 2 pdfs des R Markdown compilés (si la compilation ne fonctionne pas pour vous)
+## Projet 1 : algorithme EM
 
-Le travail sur le projet a été réalisé à 2 : Colin Coërchon et Alexandre Fort.
-Le travail sur l'algroithme EM a été réalisé par moi-même (Colin Coërchon).
+Le fichier `Algorithme_EM_Coerchon_Colin.Rmd` présente l'implémentation et l'étude de l'algorithme **Expectation-Maximization (EM)**. Ce travail a été réalisé individuellement, avec une restitution au format R Markdown et LaTeX.
 
-Il était imposé de faire **un document de maximum 10 pages**. Pour ce qui est du travail obligatoire, avec les nombreux schémas de la fin, nous arrivons à 11 pages...
-Je m'en excuse, j'avais du mal à trouver quelle partie enlever. 
-Pour ce qui est de la partie facultative, elle se trouve à la suite du document (après la partie "Conclusion").
+## Projet principal : nuées dynamiques
 
-De plus, le fichier preambule.tex n'est pas crucial, c'est un répertoire contenant quelques raccourcis de commandes $\LaTeX$ qui rendent le pdf final beaucoup plus lisible.
+Le fichier `Projet_ANDO_Coerchon_Fort.Rmd` porte sur les **nuées dynamiques**, une généralisation de la méthode des K-means. L'objectif est de construire des groupes autour de centroïdes plus riches que de simples points :
 
-En ce sens, la compilation Knit qui donne un document sous format HTML n'est pas très lisible car il ne compile pas le fichier prambule.tex .
-Nons conseillons donc une compilation en format pdf.
+- Une première version utilise des **droites** comme centroïdes.
+- Une seconde version généralise cette approche aux **hyperplans**.
 
-PS : Les 2 fichiers R Markdown comportent au tout début quelques importations de modules $\LaTeX$ qui les rendent beaucoup plus jolis ! Mais je ne vous apprends rien, je crois que vous êtes un habitué !
+Le rapport présente la méthode, son application aux données et les résultats obtenus à l'aide de visualisations. Ce projet a été réalisé individuellement (*j'avais ajouté le nom de mon ami Alexandre pour l'aider à valider haha*).
+
+## Fichiers
+
+- `Algorithme_EM_Coerchon_Colin.Rmd` : source R Markdown du rapport sur l'algorithme EM ;
+- `Algorithme_EM_Coerchon_Colin.tex` : version LaTeX générée du rapport sur l'algorithme EM ;
+- `Algorithme_EM_Coerchon_Colin.pdf` : rapport PDF associé ;
+- `Projet_ANDO_Coerchon_Fort.Rmd` : source R Markdown du rapport sur les nuées dynamiques ;
+- `Projet_ANDO_Coerchon_Fort.pdf` : rapport PDF associé ;
+- `Projet-MAD-2023.pdf` : document PDF fourni pour le projet ;
+- `preambule.tex` : commandes LaTeX utilisées pour la mise en forme ;
+- `Résultats/` : dossier contenant les résultats et figures produits au cours des analyses ;
+- `Projet_et_EM_Coerchon_Fort.zip` : archive du projet, exclue du suivi Git.
+
+La compilation au format PDF est recommandée afin de conserver la mise en forme LaTeX du document.
