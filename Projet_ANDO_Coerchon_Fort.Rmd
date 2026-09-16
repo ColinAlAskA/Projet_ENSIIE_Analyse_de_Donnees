@@ -1,0 +1,799 @@
+---
+title: "Projet ANDO"
+author: "Colin Coërchon - Alexandre Fort"
+date: "18-12-2023"
+header-includes:
+  - \usepackage[utf8]{inputenc}
+  - \usepackage{amssymb}
+  - \usepackage{amsmath}
+  - \usepackage{mathrsfs}
+  - \usepackage{stmaryrd}
+  - \usepackage{xstring}
+  - \usepackage{bbold}
+  - \usepackage{xcolor}
+  - \usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+\input{preambule.tex}
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(nloptr)
+library(FactoMineR)
+library(stats)
+library(mclust)
+```
+
+
+# Projection orthogonale
+
+## Projection sur une droite
+
+Considérons une droite $\mathcal{D}$ et un point $x$ dans $\RR^p$. Pour n'importe quelle représentation de notre droite $\mathcal{D}$ donnée, on peut se ramener à cette représentation :
+\begin{equation*}
+    \mathcal{D} = a + \operatorname{Vect}(u)
+\end{equation*}
+Avec :
+\begin{itemize}
+    \item $u$ vecteur unitaire de $\RR^p$ ($\Vert u \Vert = 1$), vecteur directeur de la droite.
+    \item $a \in \RR^p$, un point de la droite.
+\end{itemize}
+\bigskip
+
+De la même manière qu'une projection sur une droite vectorielle dans $\RR^p$, la projection $\widehat{x}$ de $x$ sur la droite $\mathcal{D}$ est alors donnée par :
+\begin{equation*}
+  \widehat x = \text{proj}_{\mathcal{D}}(x) = a + \langle x-a \mid u \rangle \,u
+\end{equation*}
+
+On en déduit alors la distance $d(x,\mathcal{D})$ de $x$ à la droite $\mathcal{D}$ :
+\begin{equation*}
+    d(x,\mathcal{D}) = \inf_{y\in \mathcal{D}} d(x,y) = d(x,\widehat x) = \Vert x - \widehat x \Vert_2
+\end{equation*}
+
+
+## Projection sur $K$ droites
+
+On considère maintenant $K$ droites $\mathcal{D}_1, \mathcal{D}_2,\dots, \mathcal{D}_K$ dans $\RR^p$. On note $\forall k \in \llbracket 1, K\rrbracket, \, \widehat{x_k} = \text{proj}_{\mathcal{D}_k}(x)$.
+
+La droite la plus proche de $x$ est alors celle qui minimise les distances $\left(d(x,\mathcal{D}_k) \right)_{k \in \llbracket 1, K \rrbracket}$.
+
+## Implémentation en R
+
+Dorénavant, suivant un ensemble de $K$ droites et un point $x$ de $\RR^p$ (muni de sa norme), nous savons trouver mathématiquement quelle est la droite la plus proche de $x$ suivant la norme choisie.
+
+On prendra pour l'implémentation la norme euclidienne de $\RR^p$, et on considèrera effectivement que tout droite est définie selon un point et son vecteur directeur. On peut alors en toute logique écrire le code souhaité :
+
+```{r}
+# Fonction pour représenter une droite
+creer_droite <- function(a, u) {
+  list(a = a, u = u / sqrt(sum(u^2)))
+}
+
+# Fonction pour calculer la projection d'un point sur une droite
+projection_sur_droite <- function(x, droite) {
+  a <- droite$a
+  u <- droite$u
+  a + sum((x - a) * u) * u  # Calcul de la projection
+}
+
+# Fonction pour trouver la droite la plus proche parmi une liste de droites
+droite_la_plus_proche <- function(x, droites) {
+  distances <- lapply(droites, function(droite) {
+    proj <- projection_sur_droite(x, droite)
+    sqrt(sum((x - proj)^2))
+  })
+  droites[[which.min(distances)]]  # Retourne la droite la plus proche de x
+}
+```
+
+# Les nuées dynamiques (ou K-means généralisés)
+
+## Explication brève de l'idée derrière l'algorithme
+
+Nous avons vu en cours et en TD que l'algorithme k-means classique est une méthode de clustering largement utilisée qui vise à \textbf{minimiser l'inertie intra-classe}. Elle est notée $I_W$, et est donnée par la formule : 
+\begin{equation*}
+    I_W = \sum_{i=1}^n \sum_{k=1}^{K} c_{ik} \Vert x_i - \mu_k \Vert^2 
+\end{equation*}
+
+où $K$ est le nombre de clusters, $C = (c_{ik})$ est une matrice de classification des points dans les différentes classes, $x_i$ sont les points de données, et \textbf{$\mu_k$ est le centroïde du cluster $k$}. 
+
+Dans cette approche, \textbf{le centroïde est le point moyen de tous les points dans le cluster}, ce qui en fait un représentant efficace lorsque les clusters sont compacts et globalement sphériques.
+\bigskip
+
+Cependant, dans l'algorithme des nuées dynamiques (ou algorithme des k-means généralisés), nous remplaçons le concept de centroïde par celui de représentant de classe, qui peut prendre différentes formes géométriques, telles qu'une droite dans $\RR^p$.
+
+Ici, au lieu de minimiser l'inertie intra-classe, \textbf{l'objectif est de minimiser une fonction de coût différente}, qui mesure la somme des distances entre chaque point et le représentant géométrique de sa classe. Cette nouvelle fonction de coût est définie comme :
+
+\begin{equation*}
+    \boxed{
+    J(C, D) = \sum_{i=1}^n \sum_{k=1}^K c_{ik} \, d^2(x_i, \mathcal{D}_k) 
+    }
+\end{equation*}
+
+où $C = (c_{ik})$ est \textit{encore} une matrice de classification, $D = \{\mathcal{D}_1, \ldots, \mathcal{D}_K\}$ représente l'ensemble des représentants de classe (dans notre cas, \textbf{des droites}), et $d^2(x_i, \mathcal{D}_k)$ est la distance au carré entre le point $x_i$ et la droite $\mathcal{D}_k$.
+
+
+## Présentation de l'algorithme
+
+L'algorithme opère en plusieurs étapes principales :
+
+\begin{enumerate}
+    \item \textbf{Initialisation} : Choisir $K$ droites initiales pour représenter les $K$ classes. Chaque droite est définie par un point $a_k$ et un vecteur unitaire $u_k$.
+    \item \textbf{Affectation} : Pour chaque point $x_i$, calculer sa distance à chaque droite $\mathcal{D}_k$ et attribuer le point à la classe dont le représentant est le plus proche.
+    \item \textbf{Mise à jour des représentants de classe} : Ajuster chaque droite représentative $\mathcal{D}_k$ pour minimiser la somme des distances au carré des points de la classe à cette droite.
+    \item \textbf{Itération} : Répéter les deux étapes précédentes jusqu'à convergence.
+\end{enumerate}
+
+### L'initialisation et l'Affectation
+
+Les deux premières étapes semblent très accessibles. Pour la première, on peut considérer $2K$ points et créer alors les $K$ premières droites initialisant l'algorithme. Pour l'affection, à l'aide de notre travail mathématiques de la première partie, cela semble très accessible d'affecter chaque point $x_i$ à son représentant de classe
+
+Seulement, pour la troisième étape, cela semble beaucoup plus complexe...
+
+### Explication de la méthode de mise à jour des représentants de classe
+
+L'étape de mise à jour des représentants de classe constitue un aspect crucial de l'algorithme des nuées dynamiques. Deux options principales sont envisageables pour cette mise à jour :
+
+\begin{enumerate}
+    \item Appliquer une régression linéaire classique pour estimer la meilleure droite au sens des moindres carrés, en utilisant la fonction \texttt{lm} en R, qui minimise la somme des carrés des erreurs verticales entre les points et la droite estimée (\textit{notamment vue en MERR}).
+    \item Utiliser une méthode d'optimisation numérique qui ajuste directement la position et la direction de chaque droite afin de minimiser une fonction de coût basée sur la distance perpendiculaire des points à la droite.
+\end{enumerate}
+
+J'ai choisi d'utiliser dans mon implémentation de l'algorithme des nuées dynamiques \textbf{la méthode d'optimisation numérique}. Elle est préférée car elle permet une minimisation plus directe et géométriquement appropriée de la distance des points à la droite. Cela est particulièrement important dans des espaces de dimension supérieure à 2 où la notion d'erreur verticale devient moins pertinente (notion davantage favorisée par \texttt{lm}).
+\bigskip
+
+Seulement, pour utiliser la fonction \texttt{optim} de R, il nous faut nécessairement \textbf{une fonction de coût à minimiser}.
+
+C'est donc pour cela que j'ai définie la fonction de coût $C(a, u)$. Elle est donc définie, pour une droite explicite, par la somme des distances perpendiculaires au carré de tous les points de la classe à la droite. Pour une droite définie par un point $a$ et un vecteur unitaire $u$, la fonction de coût pour l'ensemble des points $(x_i)$ est donnée par:
+
+$$ C(a, u) = \sum_{i=1}^n \left( d(x_i, \mathcal{D}) \right)^2, $$
+
+Cette fonction de coût est directement reliée à la minimisation du critère $J(C, D)$ qui est la somme des distances au carré des points à la droite représentative de leur classe respective, c’est-à-dire:
+
+$$ J(C, D) = \sum_{k=1}^{K} \sum_{i=1}^{n} c_{ik} \left( d(x_i, \mathcal{D}_k) \right)^2, $$
+
+où $c_{ik}$ est un coefficient binaire indiquant si le point $x_i$ appartient à la classe représentée par la droite $\mathcal{D}_k$. \textbf{L'objectif est de trouver les paramètres de la droite $(a_k, u_k)$ qui minimisent cette somme pour chaque classe $k$}.
+\medskip
+
+De plus, la méthode d'optimisation choisie pour ajuster les droites est "L-BFGS-B", une variante de l'algorithme de quasi-Newton qui est, paraît-il, bien adaptée aux problèmes de grande dimension avec des contraintes sur les paramètres.
+
+
+
+## Implémentation de l'algorithme
+
+On reprends les 4 idées phares développées juste avant : Initialisation, Affectation, Mise à jour des représentants de classe, Itération jusqu'à convergence.
+
+Voici donc l'implémentation de mon algorithme des nuées dynamiques :
+
+```{r}
+# Fonction pour calculer la projection d'un point sur une droite (représentée par a et u)
+projection_sur_droite <- function(x, a, u) {
+  a + sum((x - a) * u) * u
+}
+
+# Fonction pour calculer la distance au carrée d'un point à une droite (représentée par a et u)
+distance_perpendiculaire <- function(x, a, u) {
+  proj <- projection_sur_droite(x, a, u)
+  sum((x - proj)^2)
+}
+
+# Fonction pour représenter une droite avec 2 points de cette dernière en données.
+creer_droite_points <- function(P1, P2) {
+  u <- P2 - P1
+  list(a = P1, u = u / sqrt(sum(u^2)))
+}
+
+# Initialisation des droites pour l'algorithme des nuées dynamiques
+initialisation_droites <- function(X, K) {
+  indices_aleatoires <- sample(nrow(X), 2 * K, replace = FALSE)
+  points_aleatoires <- X[indices_aleatoires, ]
+  
+  droites <- vector("list", K)
+  for (k in 1:K) {
+    P1 <- points_aleatoires[2 * k - 1, ]
+    P2 <- points_aleatoires[2 * k, ]
+    droites[[k]] <- creer_droite_points(P1, P2)
+  }
+  droites
+}
+
+# La fonction de coût pour optimiser une droite.
+# "params" définit les vecteur a et u à optimiser (la première moitié = a, la seconde = u)
+fonction_de_cout <- function(params, points) {
+  a <- params[1:ncol(points)]
+  u <- params[(ncol(points)+1):(2*ncol(points))]
+  u <- u / sqrt(sum(u^2))
+  
+  # On calcule ensuite la somme des distances des points à la droites
+  sum(sapply(1:nrow(points), function(i) {distance_perpendiculaire(points[i, ], a, u)} ))
+}
+
+# Fonction d'optimisation de la droite pour un cluster
+optimiser_droite <- function(points, a_initial, u_initial) {
+  # Combinaison des paramètres a et u en un seul vecteur
+  params_initiaux <- c(a_initial, u_initial)
+
+  # Exécution de l'optimisation en utilisant les valeurs actuelles de a et u comme point de départ
+  # La partie clef de l'optimisation
+  result <- optim(params_initiaux, fonction_de_cout, points = points, method = "L-BFGS-B")
+  
+  a_opt <- result$par[1:ncol(points)]
+  u_opt <- result$par[(ncol(points)+1):(2*ncol(points))]
+  u_opt <- u_opt / sqrt(sum(u_opt^2))
+
+  return(list(a = a_opt, u = u_opt))
+}
+
+
+# Algorithme des k-means généralisés avec des droites comme représentants de classe
+nuees_dynamiques_droites <- function(X, K, max_iterations = 10000) {
+  n <- nrow(X)
+  
+  # Initialisation des représentants de classe (droites)
+  droites <- initialisation_droites(X, K)
+  classifications <- matrix(0, nrow = n, ncol = K)
+  
+  for (iteration in 1:max_iterations) {
+    classifications_old <- classifications
+    classifications <- matrix(0, nrow = n, ncol = K)
+    
+    # Affectation des points aux classes
+    for (i in 1:n) {
+      x_i <- X[i, ]
+      distances <- sapply(1:K, function(k) {
+        droite <- droites[[k]]
+        distance_perpendiculaire(x_i, droite$a, droite$u)
+      })
+      classifications[i, which.min(distances)] <- 1
+    }
+    
+    # Vérifier si les classifications ont changé
+    if (all(classifications == classifications_old)) {
+      break
+    }
+    
+    # Mise à jour des représentants de classe
+    for (k in 1:K) {
+      points_cluster_k <- X[classifications[, k] == 1, ]
+      if (nrow(points_cluster_k) > 0) {
+        droite_optimisee <- optimiser_droite(points_cluster_k, droites[[k]]$a, droites[[k]]$u)
+        droites[[k]] <- droite_optimisee
+      }
+    }
+  }
+  return(list(droites = droites, classifications = classifications))
+}
+
+```
+
+
+## Un premier exemple avec "iris"
+
+```{r}
+set.seed(265)
+
+data(iris)
+X_iris <- as.matrix(iris[, 1:4])
+
+# Avec notre algorithme des nuées dynamiques
+nuees_resultats <- nuees_dynamiques_droites(X_iris, K = 3)
+
+# Avec l'algorithme des kmeans
+kmeans_resultats <- kmeans(X_iris, centers = 3)
+
+# Avec l'algorithme des mélanges de gaussiennes (Mclust)
+mclust_resultats <- Mclust(X_iris, G=3, verbose = FALSE)
+```
+
+
+
+```{r, echo=FALSE}
+# Effectuer une ACP sur les données Iris
+acp_iris <- PCA(X_iris, graph = FALSE)
+
+# Fonction pour tracer les résultats de clustering sur les plans de l'ACP
+plot_acp_clusters <- function(acp_data, cluster_labels, cp_x, cp_y, main_title) {
+  plot(acp_data$ind$coord[, c(cp_x, cp_y)], col = cluster_labels,
+       xlab = paste("CP", cp_x), ylab = paste("CP", cp_y), main = main_title)
+}
+
+# Créer les graphiques pour chaque méthode de clustering
+par(mfrow = c(3, 3), mar = c(3.1, 3.1, 1, 0.5))  # Organiser les graphiques en grille 3x3
+
+# Nuées dynamiques
+plot_acp_clusters(acp_iris, nuees_resultats$classifications[, 1] + 2 * nuees_resultats$classifications[, 2] + 3 * nuees_resultats$classifications[, 3], 1, 2, "Nuées Dynamiques - CP1 vs CP2")
+plot_acp_clusters(acp_iris, nuees_resultats$classifications[, 1] + 2 * nuees_resultats$classifications[, 2] + 3 * nuees_resultats$classifications[, 3], 1, 3, "Nuées Dynamiques - CP1 vs CP3")
+plot_acp_clusters(acp_iris, nuees_resultats$classifications[, 1] + 2 * nuees_resultats$classifications[, 2] + 3 * nuees_resultats$classifications[, 3], 2, 3, "Nuées Dynamiques - CP2 vs CP3")
+
+# K-Means
+plot_acp_clusters(acp_iris, kmeans_resultats$cluster, 1, 2, "K-Means - CP1 vs CP2")
+plot_acp_clusters(acp_iris, kmeans_resultats$cluster, 1, 3, "K-Means - CP1 vs CP3")
+plot_acp_clusters(acp_iris, kmeans_resultats$cluster, 2, 3, "K-Means - CP2 vs CP3")
+
+# Mélange de Gaussiennes
+plot_acp_clusters(acp_iris, mclust_resultats$classification, 1, 2, "Mclust - CP1 vs CP2")
+plot_acp_clusters(acp_iris, mclust_resultats$classification, 1, 3, "Mclust - CP1 vs CP3")
+plot_acp_clusters(acp_iris, mclust_resultats$classification, 2, 3, "Mclust - CP2 vs CP3")
+
+```
+
+```{r, echo=FALSE}
+iris_labels <- as.numeric(factor(iris$Species))
+
+# Les matrices de confusion
+nuees_clusters <- apply(nuees_resultats[["classifications"]], 1, which.max)
+
+
+# Ensuite, vous pouvez créer la matrice de confusion
+confusion_matrix_nuees <- table(Predicted = nuees_clusters, True = iris_labels)
+confusion_matrix_nuees <- confusion_matrix_nuees[, c(2, 3, 1)]
+
+confusion_matrix_kmeans <- table(Cluster = kmeans_resultats$cluster, TrueLabels = iris_labels)
+confusion_matrix_kmeans <- confusion_matrix_kmeans[, c(2, 1, 3)]
+
+confusion_matrix_mclust <- table(Cluster = mclust_resultats$classification, TrueLabels = iris_labels)
+
+precision_nuees <- sum(diag(confusion_matrix_nuees)) / sum(confusion_matrix_nuees)
+precision_kmeans <- sum(diag(confusion_matrix_kmeans)) / sum(confusion_matrix_kmeans)
+precision_mclust <- sum(diag(confusion_matrix_mclust)) / sum(confusion_matrix_mclust)
+
+print(paste("Précision des nuées dynamiques:", round(precision_nuees, 3)))
+print(paste("Précision des K-means:", round(precision_kmeans, 3)))
+print(paste("Précision des Mclust:", round(precision_mclust, 3)))
+
+```
+
+
+
+On remarque que l'algorithme K-means et la méthode de mélange des gaussiennes (Mclust) donnent des résultats très similaires (0.96 et 0.89 de précision). Et, à l'opposé, les résultats fournis par notre algorithme des nuées dynamiques ne semblent pas très concluants (0.553 de précision).
+
+En effet, après une analyse en composantes principales réalisée par la fonction \texttt{PCA}, les résultats selon les 2 premières composantes et selon la première et la troisième donnent des résultats très intéressants :
+\begin{itemize}
+    \item Les résultats fournis par \texttt{Mclust} et \texttt{kmeans} sont effectivement quasiment identiques. Ils ont tous les deux trouvés les mêmes 3 clusters principaux, relatifs aux 3 espèces de fleurs présentes dans les données (cf. les matrices de confusion). \textbf{Le clustering est donc réussi pour ces deux algorithmes}.
+    \item En revanche, les performances de notre algorithme de nuées dynamiques laissent à désirer. En pratique, il arrive difficilement à identifier clairement un cluster et mélange un peu les 3. Il apparaît donc que \textbf{les données du dataset \texttt{iris} ne sont pas bien adaptées à un clustering par nuées dynamiques} qui utilise des droites comme représentants des classes.
+\end{itemize}
+
+
+## Un deuxième exemple
+
+Pour cet exemple, j'ai choisi de me placer dans $\RR^2$ et j'ai eu l'idée de placer des points aléatoirement autour de plusieurs droites prédéfinies. J'ai choisi pour cela 4 droites :
+\begin{itemize}
+    \item $\mathcal{D}_1$ : La droite portée par la fonction "$y = x$".
+    \item $\mathcal{D}_2$ : La droite portée par la fonction "$y = 0$".
+    \item $\mathcal{D}_3$ : La droite portée par la fonction "$y = -x$".
+    \item $\mathcal{D}_4$ : La droite portée par l'équation "$x = 0$".
+\end{itemize}
+
+```{r, echo=FALSE, fig.align='center', out.width="70%"}
+set.seed(186)
+
+# Générer des points autour des droites y = x , y = 0, y = -x et x = 0
+n_points <- 100
+
+sd1 <- 3
+sd2 <- 0.5 
+K <- 4
+
+points_ligne1 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd1), ncol = 2)
+points_ligne1[, 2] <- points_ligne1[, 1] + rnorm(n_points, mean = 0, sd = sd2)  # y = x + bruit
+points_ligne2 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd1), ncol = 2)
+points_ligne2[, 2] <- rnorm(n_points, mean = 0, sd = sd2)  # y = 0 + bruit
+points_ligne3 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd1), ncol = 2)
+points_ligne3[, 2] <- - points_ligne3[, 1] + rnorm(n_points, mean = 0, sd = sd2)  # y = - x + bruit
+points_ligne4 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd2), ncol = 2)
+points_ligne4[, 2] <- - points_ligne4[, 1] + rnorm(n_points, mean = 0, sd = sd1)  # x = 0 + bruit
+
+# Combiner les points
+X <- rbind(points_ligne1, points_ligne2, points_ligne3, points_ligne4)
+
+plot(X, main = "Exemple 2 : Nuage de points portés par 4 droites", xlab = "x", ylab = "y", col="blue")
+
+```
+
+Et de la même manière que durant l'exemple précédent, j'ai appliqué sur cet exemple les 3 algorithmes que l'on souhaite comparer, avec l'espoir qu'ils retrouvent tous les 3 les clusters portés par les 4 droites du plan.
+
+### Avec l'algorithme des kmeans de R
+
+```{r}
+kmeans_resultats <- kmeans(X, centers = K)
+```
+
+
+```{r, echo=FALSE, fig.align='center', out.width="70%"}
+plot(X, col = kmeans_resultats$cluster + 1, pch = 19, main = "K-Means - Clustering par algorithme du K-means", xlab = "x", ylab = "y")
+abline(a=0, b=1, col="lightgray", lwd=1)  # y = x
+abline(h=0, col="lightgray", lwd=1)  # y = 0
+abline(a=0, b=-1, col="lightgray", lwd=1)  # y = -x
+abline(v=0, col="lightgray", lwd=1)  # x = 0
+legend("topright", legend = paste("Cluster", 1:4), col = 2:5, pch = 19)
+
+```
+
+
+### Avec le modèle de mélange gaussien
+
+```{r}
+mclust_resultats <- Mclust(X, G=K, verbose = FALSE)
+```
+
+
+```{r, echo=FALSE, fig.align='center', out.width="70%"}
+plot(X, col = mclust_resultats$classification + 1, pch = 17, main = "Mclust - Clustering par mélange de gaussienne", xlab = "x", ylab = "y")
+abline(a=0, b=1, col="lightgray", lwd=1)  # y = x
+abline(h=0, col="lightgray", lwd=1)  # y = 0
+abline(a=0, b=-1, col="lightgray", lwd=1)  # y = -x
+abline(v=0, col="lightgray", lwd=1)  # x = 0
+legend("topright", legend = paste("Cluster", 1:4), col = 2:5, pch = 17)
+
+```
+
+
+### Avec mon modèle de nuées dynamiques
+
+```{r}
+set.seed(251)
+
+# Appliquer l'algorithme des nuées dynamiques
+resultats <- nuees_dynamiques_droites(X, K = K)
+```
+
+
+```{r, echo=FALSE, fig.align='center', out.width="85%"}
+# Visualisation des résultats
+plot(X, col = 1 + resultats$classifications[, 1] + 2 * resultats$classifications[, 2] + 3 * resultats$classifications[, 3] + 4 * resultats$classifications[, 4], xlab = "x", ylab = "y", main = "Nuées dynamiques - Clustering avec des droites", pch = 18)
+abline(a=0, b=1, col="lightgray", lwd=1)  # y = x
+abline(h=0, col="lightgray", lwd=1)  # y = 0
+abline(a=0, b=-1, col="lightgray", lwd=1)  # y = -x
+abline(v=0, col="lightgray", lwd=1)  # x = 0
+
+for (k in 1:length(resultats$droites)) {
+  u <- resultats$droites[[k]]$u
+  a <- resultats$droites[[k]]$a
+
+  if (abs(u[1]) < 0.01) {  # seuil pour déterminer si u[1] est proche de zéro
+    abline(v = a[1], col = "black", lty = 2)
+  } else {
+    pente <- u[2] / u[1]
+    ord <- a[2] - pente * a[1]
+    abline(a = ord, b = pente, col = "black", lty = 2)
+  }
+}
+
+
+legend("topright", legend = paste("Cluster", 1:4), col = 2:5, pch = 18)
+```
+
+
+### Comparaison des résultats
+
+```{r, echo=FALSE, fig.align='center', out.width="50%"}
+true_labels <- rep(1:4, each = n_points)
+
+confusion_kmeans <- table(Predicted = kmeans_resultats$cluster, True = true_labels)
+confusion_kmeans <- confusion_kmeans[, c(1, 4, 3, 2)]
+
+confusion_mclust <- table(Predicted = mclust_resultats$classification, True = true_labels)
+confusion_mclust <- confusion_mclust[, c(1, 4, 3, 2)]
+
+confusion_nuees <- table(Predicted = apply(resultats$classifications, 1, which.max),
+                         True = true_labels)
+confusion_nuees <- confusion_nuees[, c(4, 2, 3, 1)]
+
+old_par <- par(no.readonly = TRUE)
+par(mfrow = c(1, 3))
+
+image(confusion_kmeans, main = "K-means")
+image(confusion_mclust, main = "Mclust")
+image(confusion_nuees, main = "Nuées Dynamiques")
+
+
+par(old_par)
+
+
+precision_kmeans <- sum(diag(confusion_kmeans)) / sum(confusion_kmeans)
+precision_mclust <- sum(diag(confusion_mclust)) / sum(confusion_mclust)
+precision_nuees <- sum(diag(confusion_nuees)) / sum(confusion_nuees)
+
+print(paste("Précision des K-means:", round(precision_kmeans,3)))
+print(paste("Précision des Mclust:", round(precision_mclust,3)))
+print(paste("Précision des nuées dynamiques:", round(precision_nuees,3)))
+
+```
+
+
+Les résultats des matrices de confusion montrent que notre algorithme des nuées dynamiques a été particulièrement performant dans cet exemple spécifique. Il a réussi à identifier correctement (avec une précision supérieure à 0.78) les quatre clusters associés aux droites préétablies \( \mathcal{D}_1, \mathcal{D}_2, \mathcal{D}_3, \text{ et } \mathcal{D}_4 \). 
+
+Alors que l'algorithme Mclust peut parfois atteindre ce niveau de performance dans cet exemple (selon la chance d'initialisation qu'on a, ainsi que l'agencement initial des points), Kmeans n'a jamais réussi à distinguer les quatre clusters distincts. Cela illustre \textbf{une amélioration significative par rapport à l'approche Kmeans}, démontrant l'efficacité de notre algorithme de nuées dynamiques dans des situations où les données sont réparties le long de structures linéaires distinctes dans l'espace.
+
+
+# Conclusion
+
+Pour conclure, on comprend bien que l'algorithme des nuées dynamiques construit ci-dessus ne convient pas universellement à tous les types de structures de données. Cette méthode, bien qu'efficace dans certains contextes, montre ses limites face à des distributions plus regroupés et circulaires, ou à l'inverse davantage complexe. Dans ces situations, d'autres algorithmes comme les "K-means", "Mclust" ou encore "Kernel PCA" peuvent s'avérer plus performants. Cette expérience souligne l'importance cruciale de la sélection de l'algorithme en fonction des caractéristiques spécifiques des données traitées. Elle rappelle également que dans le domaine du clustering, il n'existe pas de solution unique, mais plutôt une nécessité d'adapter l'approche analytique à la nature des données pour extraire des résultats pertinents et précis.
+
+Il est important de noter que dans l'exemple que j'ai élaboré, il arrive que l'algorithme des nuées dynamiques ne parvienne pas toujours à identifier correctement les clusters. Bien que cela soit un évènement rare dans cet exemple, cette possibilité existe en raison de \textbf{la forte dépendance de l'algorithme vis-à-vis de son initialisation}, qui est entièrement aléatoire.
+
+Ce défi lié à \textbf{l'initialisation semble être un problème récurrent et essentiel} dans de nombreux algorithmes similaires. Actuellement, il semble que la recherche d'une bonne heuristique pour initialiser de tels algorithmes soit un sujet de préoccupation et de débat actuel dans le domaine.
+
+
+
+\newpage
+# Questions subsidiaires
+
+## Idée mathématique
+
+L'algorithme des nuées dynamiques que nous venons de présenter faisait intervenir la minimisation de cette fonction :
+\begin{equation*}
+    J(C, D) = \sum_{i=1}^n \sum_{k=1}^K c_{ik} \, d^2(x_i, \mathcal{D}_k) 
+\end{equation*}
+
+La question subsidiaire porte alors sur l'extension de dimension des représentants de classes dans notre algorithme. Actuellement, les représentants des classes étaient les droites $\mathcal{D}_k$. Au lieu de ça, on va s'intéresser à prendre un hyperplan de $\RR^p$ comme représentant pour chaque classe $k$.
+
+Lorsque nous passons de l'utilisation de droites comme représentants de classe à des hyperplans dans $\mathbb{R}^p$, nous devons \textbf{ajuster la fonction de coût} pour tenir compte de la distance d'un point à un hyperplan. Seulement, le grand avantage que l'on a avec les hyperplans, c'est qu'ils peuvent être décrits par l'équation "$\langle n \mid x \rangle + b = 0$", où $n$ est un vecteur normal à l'hyperplan, et $b$ est le terme de biais.
+\medskip
+
+On considère donc un hyperplan $\mathcal{H}$ de $\RR^p$. Cet hyperplan peut être décrit par :
+\begin{itemize}
+    \item un point $a$ quelconque de $\mathcal{H}$.
+    \item un vecteur normal $\overrightarrow{n}$ de $\mathcal{H}$.
+\end{itemize}
+
+Selon cette définition, la distance d'un point $x_i$ à l'hyperplan $\mathcal{H}$ est alors donnée par la formule :
+
+$$
+d(x_i, \mathcal{H}) = \dfrac{\left|\langle \overrightarrow{n} \mid \overrightarrow{x_i - a}\rangle\right|}{\Vert\overrightarrow {n}\Vert}
+$$
+
+En conséquence, nous adaptons la fonction de coût $J(C, D)$ à des hyperplans en la reformulant comme suit :
+\begin{equation*}
+    \boxed{
+    J(C, H) = \sum_{i=1}^n \sum_{k=1}^K c_{ik} \, d^2(x_i, \mathcal{H}_k)
+    }
+\end{equation*}
+
+Cette nouvelle fonction de coût $J(C, H)$ vise à minimiser la somme des carrés des distances des points à l'hyperplan le plus proche, pondérée par les indicateurs $c_{ik}$, qui spécifient si le point $x_i$ est attribué à la classe $k$. Pour chaque classe $k$ représentée par l'hyperplan $\mathcal{H}_k$, les paramètres $n$ et $a$ doivent être ajustés pour minimiser $J(C, H)$.
+
+
+## Implémentation de l'algorithme
+
+```{r}
+# Fonction pour créer un hyperplan à partir d'un point et d'un vecteur normal
+creer_hyperplan <- function(a, n) {
+  list(a = a, n = n)
+}
+
+# Fonction pour calculer la projection d'un point sur un hyperplan
+projection_sur_hyperplan <- function(x, a, n) {
+  n_norm <- n / sqrt(sum(n^2))
+  a + ((x - a) %*% n_norm) * n_norm
+}
+
+# Fonction pour calculer la distance d'un point à un hyperplan
+distance_perpendiculaire_hyperplan <- function(x, a, n) {
+  n_norm <- n / sqrt(sum(n^2))
+  abs(sum((x - a) * n_norm))
+}
+
+# Fonction pour initialiser les hyperplans pour l'algorithme des nuées dynamiques
+initialisation_hyperplans <- function(X, K) {
+  n_dim <- ncol(X)
+  hyperplans <- vector("list", K)
+  
+  for (k in 1:K) {
+    index_a <- sample(nrow(X), 1)
+    a <- X[index_a, ]
+    n <- rnorm(n_dim)
+    hyperplans[[k]] <- creer_hyperplan(a, n)
+  }
+  hyperplans
+}
+
+# Fonction de coût pour optimiser un hyperplan
+fonction_de_cout_hyperplan <- function(params, points) {
+  a <- params[1:ncol(points)]
+  n <- params[(ncol(points) + 1):(2 * ncol(points))]
+  n <- n / sqrt(sum(n^2))
+
+  sum(sapply(1:nrow(points), function(i) {
+    d <- distance_perpendiculaire_hyperplan(points[i, ], a, n)
+    d^2
+  }))
+}
+
+# Fonction d'optimisation de l'hyperplan pour un cluster
+optimiser_hyperplan <- function(points, a_initial, n_initial) {
+  # Combinaison des paramètres A et n en un seul vecteur
+  params_initiaux <- c(a_initial, n_initial)
+
+  # Exécution de l'optimisation en utilisant les valeurs actuelles de A et n 
+  # comme point de départ
+  result <- optim(params_initiaux, fonction_de_cout_hyperplan, points = points,
+                  method = "L-BFGS-B")
+  
+  a_opt <- result$par[1:ncol(points)]
+  n_opt <- result$par[(ncol(points) + 1):(2 * ncol(points))]
+  n_opt <- n_opt / sqrt(sum(n_opt^2))
+
+  return(list(a = a_opt, n = n_opt))
+}
+
+
+# Algorithme final des nuées dynamiques avec des hyperplans comme représentants de classe
+nuees_dynamiques_hyperplans <- function(X, K, max_iterations = 1000) {
+  n <- nrow(X)
+  
+  # Initialisation des représentants de classe (hyperplans)
+  hyperplans <- initialisation_hyperplans(X, K)
+  classifications <- matrix(0, nrow = n, ncol = K)
+
+  for (iteration in 1:max_iterations) {
+    classifications_old <- classifications
+    classifications <- matrix(0, nrow = n, ncol = K)
+    
+    # Affectation des points aux classes
+    for (i in 1:n) {
+      x_i <- X[i, ]
+      distances <- sapply(1:K, function(k) {
+        hyperplan <- hyperplans[[k]]
+        distance_perpendiculaire_hyperplan(x_i, hyperplan$a, hyperplan$n)
+      })
+      classifications[i, which.min(distances)] <- 1
+    }
+    
+    # Vérifier si les classifications ont changé
+    if (all(classifications == classifications_old)) {
+      break
+    }
+    
+    # Mise à jour des représentants de classe (hyperplans)
+    for (k in 1:K) {
+      points_cluster_k <- X[classifications[, k] == 1, ]
+      if (nrow(points_cluster_k) > 0) {
+        hyperplan_optimise <- optimiser_hyperplan(points_cluster_k,
+                                                  hyperplans[[k]]$a,
+                                                  hyperplans[[k]]$n)
+        hyperplans[[k]] <- hyperplan_optimise
+      }
+    }
+  }
+  
+  return(list(hyperplans = hyperplans, classifications = classifications))
+}
+```
+
+## Test de l'algorithme sur le même exemple
+
+On se place encore une fois dans $\RR^2$. Dans cet espace, les hyperplans sont des droites !
+
+Il va donc être plutôt facile de les représenter dans notre exemple.
+
+```{r, echo=FALSE, fig.align='center', out.width="70%"}
+set.seed(243)
+
+# Générer des points autour des droites y = x , y = 0, y = -x et x = 0
+n_points <- 100
+
+sd1 <- 3
+sd2 <- 0.5 
+K <- 4
+
+points_ligne1 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd1), ncol = 2)
+points_ligne1[, 2] <- points_ligne1[, 1] + rnorm(n_points, mean = 0, sd = sd2)  # y = x + bruit
+points_ligne2 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd1), ncol = 2)
+points_ligne2[, 2] <- rnorm(n_points, mean = 0, sd = sd2)  # y = 0 + bruit
+points_ligne3 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd1), ncol = 2)
+points_ligne3[, 2] <- - points_ligne3[, 1] + rnorm(n_points, mean = 0, sd = sd2)  # y = - x + bruit
+points_ligne4 <- matrix(rnorm(2 * n_points, mean = 0, sd = sd2), ncol = 2)
+points_ligne4[, 2] <- - points_ligne4[, 1] + rnorm(n_points, mean = 0, sd = sd1)  # x = 0 + bruit
+
+# Combiner les points
+X <- rbind(points_ligne1, points_ligne2, points_ligne3, points_ligne4)
+
+plot(X, main = "Exemple 2 : Nuage de points portés par 4 droites", xlab = "x", ylab = "y", col="blue")
+```
+
+Exemple 1 :
+
+```{r}
+set.seed(334)
+
+resultats_hyperplans <- nuees_dynamiques_hyperplans(X, K)
+```
+
+```{r, echo=FALSE, fig.align='center', out.width="70%"}
+
+plot(X, col = 1 + resultats_hyperplans$classifications[, 1] + 2 * resultats_hyperplans$classifications[, 2] + 3 * resultats_hyperplans$classifications[, 3] + 4 * resultats_hyperplans$classifications[, 4], xlab = "x", ylab = "y", main = "Nuées dynamiques - Clustering avec des hyperplans 1", pch = 18)
+
+# Nous devons calculer une représentation linéaire pour chaque hyperplan
+# Pour simplifier, nous pouvons utiliser les vecteurs normaux des hyperplans
+
+abline(a=0, b=1, col="lightgray", lwd=1)  # y = x
+abline(h=0, col="lightgray", lwd=1)  # y = 0
+abline(a=0, b=-1, col="lightgray", lwd=1)  # y = -x
+abline(v=0, col="lightgray", lwd=1)  # x = 0
+
+for (k in 1:K) {
+  n <- resultats_hyperplans$hyperplans[[k]]$n
+  a <- resultats_hyperplans$hyperplans[[k]]$a
+  
+  # Calculer et tracer la droite représentative
+  if (abs(n[2]) > 0.01) {
+    pente <- -n[1] / n[2]
+    ord <- a[2] - pente * a[1]
+    abline(ord, pente, col = "black", lty = 2)
+  } else {
+    # Cas spécial où la droite est verticale
+    abline(v = a[1], col = "black", lty = 2)
+  }
+}
+
+legend("topright", legend = paste("Cluster", 1:4), col = 2:5, pch = 18)
+
+```
+
+Exemple 2 :
+
+```{r}
+set.seed(335)
+
+resultats_hyperplans <- nuees_dynamiques_hyperplans(X, K)
+```
+
+
+```{r, echo=FALSE, fig.align='center', out.width="70%"}
+plot(X, col = 1 + resultats_hyperplans$classifications[, 1] + 2 * resultats_hyperplans$classifications[, 2] + 3 * resultats_hyperplans$classifications[, 3] + 4 * resultats_hyperplans$classifications[, 4], xlab = "x", ylab = "y", main = "Nuées dynamiques - Clustering avec des hyperplans 2", pch = 18)
+
+# Nous devons calculer une représentation linéaire pour chaque hyperplan
+# Pour simplifier, nous pouvons utiliser les vecteurs normaux des hyperplans
+
+abline(a=0, b=1, col="lightgray", lwd=1)  # y = x
+abline(h=0, col="lightgray", lwd=1)  # y = 0
+abline(a=0, b=-1, col="lightgray", lwd=1)  # y = -x
+abline(v=0, col="lightgray", lwd=1)  # x = 0
+
+for (k in 1:K) {
+  n <- resultats_hyperplans$hyperplans[[k]]$n
+  a <- resultats_hyperplans$hyperplans[[k]]$a
+  
+  # Calculer et tracer la droite représentative
+  if (abs(n[2]) > 0.01) {
+    pente <- -n[1] / n[2]
+    ord <- a[2] - pente * a[1]
+    abline(ord, pente, col = "black", lty = 2)
+  } else {
+    # Cas spécial où la droite est verticale
+    abline(v = a[1], col = "black", lty = 2)
+  }
+}
+
+legend("topright", legend = paste("Cluster", 1:4), col = 2:5, pch = 18)
+
+
+```
+
+Ainsi, l'algorithme arrive parfois à retrouver les 4 clusters initiaux selon notre chance au moment de l'initialisation. Mais contrairement aux résultats dans le cadre des nuées dynamiques où les représentants de classe étaient des droites, on arrive ici davantage à des résultats où seulement 2 clusters sont retrouvés.
+
+En effet, l'exemple 2 est l'exemple le plus courant que j'ai réussi à avoir. Et on remarque effectivement que \textbf{3 hyperplans (des droites ici) deviennent colinéaires au fil des convergences}. Ce qui impacte forcément les clusters finaux.
+
+Mais, en dépit de ces petites imprécisions, \textbf{l'algorithme a montré une certaine capacité à discerner la structure sous-jacente des données}, même si tous les clusters n'ont pas été parfaitement isolés.
+
+
+
+
+
+
+
+
+
+
+
+
+

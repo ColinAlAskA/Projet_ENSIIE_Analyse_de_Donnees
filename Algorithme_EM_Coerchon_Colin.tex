@@ -1,0 +1,389 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{stmaryrd}
+\usepackage{xstring}
+\usepackage{bbold}
+\usepackage{xcolor}
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Algorithme EM},
+  pdfauthor={Colin Coërchon},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Algorithme EM}
+\author{Colin Coërchon}
+\date{18-12-2023}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\input{preambule.tex}
+
+\newpage
+
+\hypertarget{introduction-sur-lalgorithme-em}{%
+\section{Introduction sur l'Algorithme
+EM}\label{introduction-sur-lalgorithme-em}}
+
+L'\textbf{algorithme EM} (Expectation-Maximization) est une méthode
+itérative pour trouver des estimations de maximum de vraisemblance de
+paramètres dans des modèles statistiques, où le modèle dépend de
+\textbf{variables latentes non observées}. Cet algorithme est
+particulièrement utile dans les situations où les données observées sont
+un mélange de plusieurs distributions sous-jacentes mais dont les
+paramètres sont inconnus.
+
+\hypertarget{explication-thuxe9orique-de-lalgorithme}{%
+\section{Explication théorique de
+l'algorithme}\label{explication-thuxe9orique-de-lalgorithme}}
+
+\hypertarget{les-donnuxe9es-du-probluxe8me}{%
+\subsection{Les données du
+problème}\label{les-donnuxe9es-du-probluxe8me}}
+
+Dans le cadre de l'algorithme EM, les données du problème sont
+constituées de :
+
+\begin{itemize}
+    \item $X$ : Les données observées.
+    \item $Z$ : Les variables latentes, qui représentent les informations cachées ou non observables directement.
+    \item $\Theta$ : Les paramètres du modèle que nous cherchons à estimer.
+\end{itemize}
+
+\hypertarget{linitialisation}{%
+\subsection{L'initialisation}\label{linitialisation}}
+
+Avant de commencer les itérations de l'algorithme EM, il est nécessaire
+d'initialiser les paramètres \(\Theta\). Cette initialisation peut se
+faire de manière aléatoire, ou basée sur une certaine heuristique
+choisie.
+
+\hypertarget{le-cux153ur-de-lalgorithme}{%
+\subsection{Le cœur de l'algorithme}\label{le-cux153ur-de-lalgorithme}}
+
+L'algorithme EM alterne entre deux étapes principales :
+
+\begin{itemize}
+  \item \textbf{Étape E (Expectation)} : Calcule l'espérance de la log-vraisemblance en tenant compte des variables latentes, en utilisant les valeurs actuelles des paramètres estimés. Cette étape génère une fonction, souvent appelée la fonction Q, qui est une moyenne pondérée de la log-vraisemblance des données complètes (observées et latentes).
+  
+  \[ Q(\Theta, \Theta^{(q)}) = \mathbb{E}_{Z\,|\,X,\Theta^{(q)}}\left[\log \mathbb{P}(X, Z; \Theta)\right] \]
+  
+  \item \textbf{Étape M (Maximization)} : Met à jour les paramètres en maximisant cette fonction Q. Cette mise à jour vise à améliorer les estimations des paramètres en maximisant la vraisemblance des données observées.
+  
+  \[ \Theta^{(q+1)} = \arg \max_{\Theta} Q(\Theta, \Theta^{(q)}) \]
+  
+\end{itemize}
+
+L'algorithme procède à ces deux étapes jusqu'à ce que
+\textbf{la convergence soit atteinte}, c'est-à-dire que les changements
+dans les paramètres entre les itérations successives deviennent
+négligeables.
+
+\hypertarget{un-muxe9lange-de-gaussiennes}{%
+\section{Un mélange de Gaussiennes}\label{un-muxe9lange-de-gaussiennes}}
+
+Dans le contexte des mélanges de distributions, notamment des mélanges
+gaussiens, l'algorithme EM permet d'estimer les moyennes, les variances
+et les proportions de chaque distribution gaussienne dans le mélange.
+Les variables latentes, dans ce cas, représentent
+\textbf{l'appartenance de chaque observation à une distribution spécifique du mélange}.
+
+En notant \(t_{ik}^{(q)}\) la quantité donnée par
+\({\displaystyle t_{ik}^{(q)}=\mathbb{E}\left(Z_{ik} = 1 \mid X_i = x_i,\Theta ^{(q)}\right)}\)
+à l'étape \(q\), on peut séparer concrètement l'algorithme EM en deux
+étapes : E et M.
+
+On considère que \(f\) correspond à la fonction densité d'une
+gaussienne, et qu'on cherche à estimer les paramètres donnés à l'étape
+\(q\) par
+\(\Theta^{(q)} = \left\{ \pi_k^{(q)}, \mu_k^{(q)}, \sigma_k^{2\,(q)} \middle| k \in \llbracket 1, K \rrbracket \right\}\).
+
+\begin{itemize}
+    \item \textbf{Étape E} : $\forall i \in \llbracket 1, n\rrbracket, \forall k \in \llbracket 1, K \rrbracket$, calcul des $t_{ik}$ par la règle d'inversion de Bayes :
+        \begin{align*}
+            t_{ik}^{(q)} &= \mathbb{P}\left(Z_{ik} = 1 \mid X_i = x_i,\Theta ^{(q)}\right) \\
+            &= \dfrac{\mathbb{P}\left(Z_{ik} = 1, X_i = x_i,\Theta ^{(q)}\right)}{\mathbb{P}\left(X_i = x_i, \Theta ^{(q)}\right)} \\
+            &= \dfrac{\mathbb{P}(Z_{ik} = 1, \Theta ^{(q)}) \; \mathbb{P}(X_i = x_i \mid Z_{ik} = 1, \Theta ^{(q)})}{\sum_{\ell=1}^K \mathbb{P}(Z_{i\ell} = 1, \Theta ^{(q)}) \; \mathbb{P}(X_i = x_i \mid Z_{i\ell} = 1, \Theta ^{(q)})} \\
+            &= \dfrac{\pi_k^{(q)} f(x_i; \mu_k^{(q)}, \sigma_k^{2\,(q)}) }{\sum_{\ell=1}^K\pi_\ell^{(q)} f(x_i; \mu_\ell^{(q)}, \sigma_\ell^{2\,(q)})}.
+        \end{align*}
+        
+    \item \textbf{Étape M} : détermination de $\Theta^{(q+1)}$ maximisant :
+        \begin{equation*}        Q\left(\Theta,\Theta^{(q)}\right)=\sum_{i=1}^n\sum_{k=1}^K t_{ik}^{(q)} \log\left(\pi_k f(x_i; \mu_k, \sigma_k^2) \right).
+        \end{equation*}
+        Les calculs ne sont ici pas détaillés, mais ils l'ont été dans le cours.
+\end{itemize}
+
+De plus, on arrive après calculs à exprimer les différents paramètres de
+\(\Theta^{(q+1)}\) par rapport aux données : \begin{align*}
+    \forall k \in \llbracket 1, K \rrbracket, \qquad \dfrac{\partial Q(\Theta, \Theta^{(q)})}{\partial \pi_k} = 0 \quad \Longrightarrow \pi_k &= \frac{1}{n}\sum_{i=1}^nt_{ik}^{(q)} \\
+    \forall k \in \llbracket 1, K \rrbracket, \qquad \dfrac{\partial Q(\Theta, \Theta^{(q)})}{\partial \mu_k} = 0 \quad \Longrightarrow \mu_k &=\frac{\sum_{i=1}^nt_{ik}^{(q)} x_i}{\sum_{i=1}^nt_{ik}^{(q)}} \\
+    \forall k \in \llbracket 1, K \rrbracket, \qquad \dfrac{\partial Q(\Theta, \Theta^{(q)})}{\partial \sigma_k^2} = 0 \quad \Longrightarrow \sigma_{k}^2 &={\frac {\sum_{i=1}^{n}t_{ik}^{(q)}(x_{i}-\mu_{k})^2}{\sum_{i=1}^{n}t_{ik}^{(q)}}}
+\end{align*}
+
+On se concentrera ici au \textbf{mélange de 2 gaussiennes} seulement.
+
+\hypertarget{impluxe9mentation-de-lalgorithme}{%
+\subsection{Implémentation de
+l'algorithme}\label{impluxe9mentation-de-lalgorithme}}
+
+Grâce aux formules données juste avant, appliquées au cas \(K=2\), on en
+déduit assez facilement l'implémentation de l'algorithme EM.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Fonction pour initialiser les paramètres pour un mélange de deux gaussiennes}
+\NormalTok{initialisation\_parametres }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(X) \{}
+\NormalTok{  pi }\OtherTok{\textless{}{-}} \FloatTok{0.5}
+\NormalTok{  mu\_1 }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(X, }\DecValTok{1}\NormalTok{) }\CommentTok{\# Choisir aléatoirement un point de données pour mu\_1}
+\NormalTok{  mu\_2 }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(X, }\DecValTok{1}\NormalTok{) }\CommentTok{\# Choisir aléatoirement un autre point de données pour mu\_2}
+\NormalTok{  sigma2\_1 }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{  sigma2\_2 }\OtherTok{\textless{}{-}} \DecValTok{1}
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}\AttributeTok{pi =}\NormalTok{ pi, }\AttributeTok{mu\_1 =}\NormalTok{ mu\_1, }\AttributeTok{mu\_2 =}\NormalTok{ mu\_2, }\AttributeTok{sigma2\_1 =}\NormalTok{ sigma2\_1, }\AttributeTok{sigma2\_2 =}\NormalTok{ sigma2\_2))}
+\NormalTok{\}}
+
+\CommentTok{\# Étape E}
+\NormalTok{etape\_E }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(X, pi, mu\_1, mu\_2, sigma2\_1, sigma2\_2) \{}
+\NormalTok{  t1 }\OtherTok{\textless{}{-}}\NormalTok{ pi }\SpecialCharTok{*} \FunctionTok{dnorm}\NormalTok{(X, }\AttributeTok{mean =}\NormalTok{ mu\_1, }\AttributeTok{sd =} \FunctionTok{sqrt}\NormalTok{(sigma2\_1))}
+\NormalTok{  t2 }\OtherTok{\textless{}{-}}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ pi) }\SpecialCharTok{*} \FunctionTok{dnorm}\NormalTok{(X, }\AttributeTok{mean =}\NormalTok{ mu\_2, }\AttributeTok{sd =} \FunctionTok{sqrt}\NormalTok{(sigma2\_2))}
+\NormalTok{  sum\_t }\OtherTok{\textless{}{-}}\NormalTok{ t1 }\SpecialCharTok{+}\NormalTok{ t2}
+\NormalTok{  t1 }\OtherTok{\textless{}{-}}\NormalTok{ t1 }\SpecialCharTok{/}\NormalTok{ sum\_t}
+\NormalTok{  t2 }\OtherTok{\textless{}{-}}\NormalTok{ t2 }\SpecialCharTok{/}\NormalTok{ sum\_t}
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}\AttributeTok{t1 =}\NormalTok{ t1, }\AttributeTok{t2 =}\NormalTok{ t2))}
+\NormalTok{\}}
+
+\CommentTok{\# Étape M}
+\NormalTok{etape\_M }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(X, t1, t2) \{}
+\NormalTok{  pi }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(t1)}
+\NormalTok{  mu\_1 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(t1 }\SpecialCharTok{*}\NormalTok{ X) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(t1)}
+\NormalTok{  mu\_2 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(t2 }\SpecialCharTok{*}\NormalTok{ X) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(t2)}
+\NormalTok{  sigma2\_1 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(t1 }\SpecialCharTok{*}\NormalTok{ (X }\SpecialCharTok{{-}}\NormalTok{ mu\_1)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(t1)}
+\NormalTok{  sigma2\_2 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(t2 }\SpecialCharTok{*}\NormalTok{ (X }\SpecialCharTok{{-}}\NormalTok{ mu\_2)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(t2)}
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}\AttributeTok{pi =}\NormalTok{ pi, }\AttributeTok{mu\_1 =}\NormalTok{ mu\_1, }\AttributeTok{mu\_2 =}\NormalTok{ mu\_2, }\AttributeTok{sigma2\_1 =}\NormalTok{ sigma2\_1, }\AttributeTok{sigma2\_2 =}\NormalTok{ sigma2\_2))}
+\NormalTok{\}}
+
+\CommentTok{\# L\textquotesingle{}algorithme EM final, dans le cadre d\textquotesingle{}un mélange de deux gaussiennes}
+\NormalTok{em\_algorithme }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(X, }\AttributeTok{max\_iterations =} \DecValTok{1000}\NormalTok{, }\AttributeTok{tolerance =} \FloatTok{1e{-}10}\NormalTok{) \{}
+\NormalTok{  params }\OtherTok{\textless{}{-}} \FunctionTok{initialisation\_parametres}\NormalTok{(X)}
+  \ControlFlowTok{for}\NormalTok{ (iteration }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{max\_iterations) \{}
+\NormalTok{    params\_old }\OtherTok{\textless{}{-}}\NormalTok{ params}
+    
+    \CommentTok{\# Étape E}
+\NormalTok{    t\_values }\OtherTok{\textless{}{-}} \FunctionTok{etape\_E}\NormalTok{(X, params}\SpecialCharTok{$}\NormalTok{pi, params}\SpecialCharTok{$}\NormalTok{mu\_1, params}\SpecialCharTok{$}\NormalTok{mu\_2, params}\SpecialCharTok{$}\NormalTok{sigma2\_1, params}\SpecialCharTok{$}\NormalTok{sigma2\_2)}
+    
+    \CommentTok{\# Étape M}
+\NormalTok{    params }\OtherTok{\textless{}{-}} \FunctionTok{etape\_M}\NormalTok{(X, t\_values}\SpecialCharTok{$}\NormalTok{t1, t\_values}\SpecialCharTok{$}\NormalTok{t2)}
+    
+    \CommentTok{\# Vérifier la convergence}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{abs}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{mu\_1 }\SpecialCharTok{{-}}\NormalTok{ params\_old}\SpecialCharTok{$}\NormalTok{mu\_1) }\SpecialCharTok{\textless{}}\NormalTok{ tolerance }\SpecialCharTok{\&\&} 
+        \FunctionTok{abs}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{mu\_2 }\SpecialCharTok{{-}}\NormalTok{ params\_old}\SpecialCharTok{$}\NormalTok{mu\_2) }\SpecialCharTok{\textless{}}\NormalTok{ tolerance }\SpecialCharTok{\&\&}
+        \FunctionTok{abs}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{sigma2\_1 }\SpecialCharTok{{-}}\NormalTok{ params\_old}\SpecialCharTok{$}\NormalTok{sigma2\_1) }\SpecialCharTok{\textless{}}\NormalTok{ tolerance }\SpecialCharTok{\&\&} 
+        \FunctionTok{abs}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{sigma2\_2 }\SpecialCharTok{{-}}\NormalTok{ params\_old}\SpecialCharTok{$}\NormalTok{sigma2\_2) }\SpecialCharTok{\textless{}}\NormalTok{ tolerance }\SpecialCharTok{\&\&}
+        \FunctionTok{abs}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{pi }\SpecialCharTok{{-}}\NormalTok{ params\_old}\SpecialCharTok{$}\NormalTok{pi) }\SpecialCharTok{\textless{}}\NormalTok{ tolerance) \{}
+      \ControlFlowTok{break}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \FunctionTok{return}\NormalTok{(params)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{application-dans-un-exemple}{%
+\subsection{Application dans un
+exemple}\label{application-dans-un-exemple}}
+
+On reprend l'exemple vu dans le TD3.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mu1 }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{mu2 }\OtherTok{\textless{}{-}} \DecValTok{4}
+\NormalTok{sigma1 }\OtherTok{\textless{}{-}} \DecValTok{1}
+\NormalTok{sigma2 }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{/}\DecValTok{2}
+\NormalTok{pi1 }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{/}\DecValTok{3}
+\NormalTok{pi2 }\OtherTok{\textless{}{-}} \DecValTok{2}\SpecialCharTok{/}\DecValTok{3} \CommentTok{\# 1 {-} pi1}
+
+\NormalTok{n }\OtherTok{\textless{}{-}} \DecValTok{1000}
+
+\NormalTok{labels }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{), }\AttributeTok{size =}\NormalTok{ n, }\AttributeTok{replace =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{prob =} \FunctionTok{c}\NormalTok{(pi1, pi2))}
+
+\CommentTok{\# Si label = 1, on simule un x suivant la première loi normale, sinon il suit la deuxième loi normale.}
+\NormalTok{X }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(labels }\SpecialCharTok{==} \DecValTok{1}\NormalTok{, }
+                         \FunctionTok{rnorm}\NormalTok{(n, }\AttributeTok{mean =}\NormalTok{ mu1, }\AttributeTok{sd =}\NormalTok{ sigma1), }
+                         \FunctionTok{rnorm}\NormalTok{(n, }\AttributeTok{mean =}\NormalTok{ mu2, }\AttributeTok{sd =}\NormalTok{ sigma2))}
+
+\FunctionTok{hist}\NormalTok{(X, }\AttributeTok{breaks =} \DecValTok{50}\NormalTok{, }\AttributeTok{col =} \StringTok{\textquotesingle{}skyblue\textquotesingle{}}\NormalTok{, }\AttributeTok{border =} \StringTok{\textquotesingle{}black\textquotesingle{}}\NormalTok{,}
+     \AttributeTok{main =} \StringTok{\textquotesingle{}Histogramme du mélange des deux gaussiennes\textquotesingle{}}\NormalTok{,}
+     \AttributeTok{xlab =} \StringTok{\textquotesingle{}Les différentes valeurs aléatoirement choisies\textquotesingle{}}\NormalTok{, }\AttributeTok{ylab =} \StringTok{\textquotesingle{}Fréquence\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Algorithme_EM_Coerchon_Colin_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+Application de notre algorithme EM sur cet exemple :
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{params }\OtherTok{\textless{}{-}} \FunctionTok{em\_algorithme}\NormalTok{(X)}
+\NormalTok{params}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $pi
+## [1] 0.3367213
+## 
+## $mu_1
+## [1] -0.001391806
+## 
+## $mu_2
+## [1] 3.971845
+## 
+## $sigma2_1
+## [1] 0.9656884
+## 
+## $sigma2_2
+## [1] 0.2625749
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x\_vals }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\FunctionTok{min}\NormalTok{(X), }\FunctionTok{max}\NormalTok{(X), }\AttributeTok{length.out =} \DecValTok{300}\NormalTok{)}
+\NormalTok{dens1 }\OtherTok{\textless{}{-}} \FunctionTok{dnorm}\NormalTok{(x\_vals, }\AttributeTok{mean =}\NormalTok{ params}\SpecialCharTok{$}\NormalTok{mu\_1, }\AttributeTok{sd =} \FunctionTok{sqrt}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{sigma2\_1))}
+\NormalTok{dens2 }\OtherTok{\textless{}{-}} \FunctionTok{dnorm}\NormalTok{(x\_vals, }\AttributeTok{mean =}\NormalTok{ params}\SpecialCharTok{$}\NormalTok{mu\_2, }\AttributeTok{sd =} \FunctionTok{sqrt}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{sigma2\_2))}
+\NormalTok{dens\_total }\OtherTok{\textless{}{-}}\NormalTok{ params}\SpecialCharTok{$}\NormalTok{pi }\SpecialCharTok{*}\NormalTok{ dens1 }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ params}\SpecialCharTok{$}\NormalTok{pi) }\SpecialCharTok{*}\NormalTok{ dens2}
+
+\CommentTok{\# Déterminer la plage pour l\textquotesingle{}axe y}
+\NormalTok{y\_max }\OtherTok{\textless{}{-}} \FunctionTok{max}\NormalTok{(dens\_total) }\SpecialCharTok{*} \FloatTok{1.6}  \CommentTok{\# Augmenter un peu pour avoir de l\textquotesingle{}espace au{-}dessus des courbes}
+
+\CommentTok{\# Créer un espace graphique vide avec une plage y étendue}
+\FunctionTok{plot}\NormalTok{(x\_vals, }\AttributeTok{type =} \StringTok{"n"}\NormalTok{, }\AttributeTok{xlim =} \FunctionTok{range}\NormalTok{(x\_vals), }\AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, y\_max), }\AttributeTok{xlab =} \StringTok{"Valeurs"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Densité"}\NormalTok{,}
+     \AttributeTok{main =} \StringTok{"Histogramme avec Densités Superposées"}\NormalTok{)}
+
+\CommentTok{\# Ajouter l\textquotesingle{}histogramme}
+\FunctionTok{hist}\NormalTok{(X, }\AttributeTok{breaks =} \DecValTok{50}\NormalTok{, }\AttributeTok{col =} \StringTok{\textquotesingle{}skyblue\textquotesingle{}}\NormalTok{, }\AttributeTok{border =} \StringTok{\textquotesingle{}black\textquotesingle{}}\NormalTok{, }\AttributeTok{freq =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{add =} \ConstantTok{TRUE}\NormalTok{)}
+
+\CommentTok{\# Ajouter les courbes de densité}
+\FunctionTok{lines}\NormalTok{(x\_vals, dens1, }\AttributeTok{col =} \StringTok{\textquotesingle{}green3\textquotesingle{}}\NormalTok{, }\AttributeTok{lwd =} \DecValTok{2}\NormalTok{)}
+\FunctionTok{lines}\NormalTok{(x\_vals, dens2, }\AttributeTok{col =} \StringTok{\textquotesingle{}blue\textquotesingle{}}\NormalTok{, }\AttributeTok{lwd =} \DecValTok{2}\NormalTok{)}
+\FunctionTok{lines}\NormalTok{(x\_vals, dens\_total, }\AttributeTok{col =} \StringTok{\textquotesingle{}red\textquotesingle{}}\NormalTok{, }\AttributeTok{lwd =} \DecValTok{2}\NormalTok{, }\AttributeTok{lty =} \StringTok{\textquotesingle{}dashed\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Algorithme_EM_Coerchon_Colin_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+Dans ce graphique, les 2 courbes verte et bleue correspondent aux deux
+densités obtenues par notre algorithme EM. \textbf{La courbe en rouge}
+correspond alors à la densité totale du mélange, qui est la somme
+pondérée des deux densités gaussiennes.
+
+\end{document}
