@@ -13,6 +13,8 @@ Le fichier `Projet_ANDO_Coerchon_Fort.Rmd` porte sur les **nuées dynamiques**, 
 - Une première version utilise des **droites** comme centroïdes.
 - Une seconde version généralise cette approche aux **hyperplans**.
 
+<img width="787" height="486" alt="win1" src="https://github.com/user-attachments/assets/309f61f1-5574-4f90-9b62-7b023935a03a" />
+
 Le rapport présente la méthode, son application aux données et les résultats obtenus à l'aide de visualisations. Ce projet a été réalisé individuellement (*j'avais ajouté le nom de mon ami Alexandre pour l'aider à valider haha*).
 
 ## Fichiers
